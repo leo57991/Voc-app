@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-generativeai
+edge-tts
+nest_asyncio
+python-multipart
