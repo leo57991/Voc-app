@@ -26,7 +26,7 @@ async def generate_podcast(topic: str):
     print(f"收到主題請求: {topic}")
     
     # 1. 生成劇本
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
     prompt = f"""
     Write a fun, energetic podcast dialogue between Alex (Male) and Sarah (Female).
     Topic: {topic}
