@@ -36,10 +36,10 @@ async def generate_podcast(topic: str):
     """
     print(f"收到主題: {topic}")
     
-    # 1. 生成劇本 (使用 gemini-1.5-flash)
+    # 1. 生成劇本 (使用 gemini-2.0-flash)
     try:
-        # 這裡指定使用 Flash 模型
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # 🌟 修正點：根據你的 list_models 結果，我們改用 gemini-2.0-flash
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
         prompt = f"""
         Write a fun, energetic podcast dialogue between Alex (Male) and Sarah (Female).
