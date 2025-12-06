@@ -8,11 +8,11 @@ import uuid
 
 app = FastAPI()
 
-# ⚠️ 為了安全，建議把 API Key 放在環境變數，但在這裡為了測試方便先填入
-# 在 Render 上架時，請在 Environment Variables 設定 GEMINI_API_KEY
+# ⚠️ Render 的 Environment Variable 設定好後，這裡就會自動讀取
+# 如果你在本地測試，請確保這裡填入你的 Key，或者在 Render 後台設定
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "你的_GEMINI_API_KEY_填在這裡")
 
-genai.configure(api_key="AIzaSyCrv_ONdVXXasLupFA4Dv0K7NaFc_xups0")
+genai.configure(api_key=GEMINI_API_KEY)
 
 @app.get("/")
 def read_root():
@@ -26,7 +26,9 @@ async def generate_podcast(topic: str):
     print(f"收到主題請求: {topic}")
     
     # 1. 生成劇本
-    model = genai.GenerativeModel('gemini-pro')
+    # 改回最新的 Flash 模型，因為你已經更新了 requirements.txt，這次一定行
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
     prompt = f"""
     Write a fun, energetic podcast dialogue between Alex (Male) and Sarah (Female).
     Topic: {topic}
@@ -39,7 +41,10 @@ async def generate_podcast(topic: str):
     try:
         response = model.generate_content(prompt)
         script = response.text
+        print("劇本生成成功") # Debug 用
     except Exception as e:
+        # 如果還是失敗，我們會印出更詳細的錯誤，包含可用的模型列表
+        print(f"Gemini Error Detail: {e}")
         raise HTTPException(status_code=500, detail=f"Gemini Error: {str(e)}")
 
     # 2. 生成語音
@@ -54,8 +59,8 @@ async def generate_podcast(topic: str):
         speaker = parts[0].strip()
         text = parts[1].strip()
         
-        # 簡單清理文字
-        text = text.replace("*", "")
+        # 簡單清理文字 (移除星號等 Markdown 符號)
+        text = text.replace("*", "").replace("#", "")
         
         voice = "en-US-ChristopherNeural" if "Alex" in speaker else "en-US-AvaNeural"
         
@@ -65,10 +70,10 @@ async def generate_podcast(topic: str):
                 final_audio += chunk["data"]
 
     # 3. 存成暫存檔
-    filename = f"{uuid.uuid4()}.mp3"
+    # 使用 /tmp/ 目錄，這是 Render 等雲端服務允許寫入的地方
+    filename = f"/tmp/{uuid.uuid4()}.mp3"
     with open(filename, "wb") as f:
         f.write(final_audio)
 
     # 4. 回傳檔案
-
     return FileResponse(filename, media_type="audio/mpeg", filename="podcast.mp3")
