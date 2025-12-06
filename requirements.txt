@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-google-generativeai
+google-generativeai>=0.7.2
 edge-tts
 nest_asyncio
 python-multipart
