@@ -17,7 +17,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 def read_root():
     return {"status": "Radio Server Online"}
 
-# 🛠️ 診斷工具：用瀏覽器打開 /list_models 可以看到所有可用的模型
+# 🛠️ 診斷工具
 @app.get("/list_models")
 def list_models():
     try:
@@ -38,7 +38,6 @@ async def generate_podcast(topic: str):
     
     # 1. 生成劇本 (使用 gemini-2.0-flash)
     try:
-        # 🌟 修正點：根據你的 list_models 結果，我們改用 gemini-2.0-flash
         model = genai.GenerativeModel('gemini-2.0-flash')
         
         prompt = f"""
@@ -71,20 +70,30 @@ async def generate_podcast(topic: str):
         speaker = parts[0].strip()
         text = parts[1].strip()
         
-        # 移除可能殘留的星號或標記
+        # 移除可能殘留的 Markdown 符號
         text = text.replace("*", "").strip()
         
         if not text: continue
         
-        # 分配聲音
-        voice = "en-US-ChristopherNeural" if "Alex" in speaker else "en-US-AvaNeural"
+        # 🌟 修改點 1: 換成最穩定的 Guy (男) 和 Aria (女)
+        voice = "en-US-GuyNeural" if "Alex" in speaker else "en-US-AriaNeural"
         
-        communicate = edge_tts.Communicate(text, voice)
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                final_audio += chunk["data"]
+        # 🌟 修改點 2: 加上 Try-Except 安全氣囊
+        # 如果這一句失敗，只會印出錯誤，不會讓整個程式當機
+        try:
+            print(f"正在錄製 ({voice}): {text[:20]}...") # Log 紀錄
+            communicate = edge_tts.Communicate(text, voice)
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    final_audio += chunk["data"]
+        except Exception as e:
+            print(f"⚠️ 錄音失敗 (跳過此句): {text} | 錯誤: {e}")
+            continue
 
-    # 3. 存成暫存檔 (使用 /tmp/ 避免權限問題)
+    if len(final_audio) == 0:
+        raise HTTPException(status_code=500, detail="生成音檔失敗，可能是 TTS 服務暫時無法連線")
+
+    # 3. 存成暫存檔
     filename = f"/tmp/{uuid.uuid4()}.mp3"
     with open(filename, "wb") as f:
         f.write(final_audio)
