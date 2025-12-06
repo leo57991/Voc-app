@@ -12,7 +12,7 @@ app = FastAPI()
 # 在 Render 上架時，請在 Environment Variables 設定 GEMINI_API_KEY
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "你的_GEMINI_API_KEY_填在這裡")
 
-genai.configure(api_key=AIzaSyCrv_ONdVXXasLupFA4Dv0K7NaFc_xups0)
+genai.configure(api_key="AIzaSyCrv_ONdVXXasLupFA4Dv0K7NaFc_xups0")
 
 @app.get("/")
 def read_root():
@@ -70,4 +70,5 @@ async def generate_podcast(topic: str):
         f.write(final_audio)
 
     # 4. 回傳檔案
+
     return FileResponse(filename, media_type="audio/mpeg", filename="podcast.mp3")
