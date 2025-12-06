@@ -9,8 +9,8 @@ import uuid
 app = FastAPI()
 
 # ⚠️ Render 的 Environment Variable 設定好後，這裡就會自動讀取
-# 如果你在本地測試，請確保這裡填入你的 Key，或者在 Render 後台設定
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "你的_GEMINI_API_KEY_填在這裡")
+# 讓程式去讀取系統環境變數，如果没有讀到，才用後面的字串
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -77,3 +77,4 @@ async def generate_podcast(topic: str):
 
     # 4. 回傳檔案
     return FileResponse(filename, media_type="audio/mpeg", filename="podcast.mp3")
+
